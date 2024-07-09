@@ -4,6 +4,9 @@ from torch.utils import data
 from torchvision import transforms
 from d2l import torch as d2l
 from IPython import display
+import pandas as pd
+import torch
+from torch.utils.data import DataLoader, Dataset
 
 
 def get_dataloader_workers():  #@save
@@ -120,6 +123,25 @@ def evaluate_accuracy(net, data_iter):  #@save
         for X, y in data_iter:
             metric.add(accuracy(net(X), y), y.numel())
     return metric[0] / metric[1]
+
+
+class CSVDataset(Dataset):
+    def __init__(self, csv_file):
+        self.data = pd.read_csv(csv_file)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        return self.data.iloc[idx].values
+
+
+def load_data_from_csv(csv_file1, batch_size):
+    dataset1 = CSVDataset(csv_file1)
+
+    data_loader1 = DataLoader(dataset1, batch_size=batch_size, shuffle=True, num_workers=4)
+
+    return data_loader1
 
 def train_ch3(net, train_iter, test_iter, loss, num_epochs, updater):  #@save
     """训练模型（定义见第3章）"""
